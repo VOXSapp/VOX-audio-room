@@ -1,1 +1,1 @@
-export const BASE_URL = 'https://vox-s.herokuapp.com/'
+export const BASE_URL = 'https://vox-s.herokuapp.com'
