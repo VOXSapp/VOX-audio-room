@@ -74,6 +74,7 @@ const Menu = () => {
 
                     <div className="dropdown-menu" aria-labelledby="navbarDropdown">
                     <Link className="dropdown-item" to={`/profile/${auth.user._id}`}>Profile</Link>
+                    {/* <Link className="dropdown-item" to={`/blocklist/${auth.user._id}`}>Blocked</Link> */}
 
                     <label htmlFor="theme" className="dropdown-item"
                     onClick={() => dispatch({

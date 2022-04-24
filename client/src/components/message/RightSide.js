@@ -7,7 +7,7 @@ import Icons from '../Icons'
 import { GLOBALTYPES } from '../../redux/actions/globalTypes'
 import { imageShow, videoShow } from '../../utils/mediaShow'
 import { imageUpload } from '../../utils/imageUpload'
-import { addMessage, getMessages, loadMoreMessages, deleteConversation } from '../../redux/actions/messageAction'
+import { addMessage, getMessages, loadMoreMessages, deleteConversation,blockUser } from '../../redux/actions/messageAction'
 import LoadIcon from '../../images/loading.gif'
 
 const RightSide = () => {
@@ -143,6 +143,14 @@ const RightSide = () => {
         }
     }
 
+    const handleBlockUser = ()=>{
+        if(window.confirm('Do you want to block user?')){
+            dispatch(deleteConversation({auth, id}))
+            dispatch(blockUser({auth,id}))
+            return history.push('/message')
+        }
+    }
+
     // Call
     const caller = ({video}) => {
         const { _id, avatar, username, fullname } = user
@@ -186,8 +194,9 @@ const RightSide = () => {
                     user.length !== 0 &&
                     <UserCard user={user}>
                         <div>
-                           
-
+                            {/* <button className="btn btn-primary" 
+                            onClick={handleBlockUser}>Block</button> */}
+                            
                             <i className="fas fa-trash text-danger"
                             onClick={handleDeleteConversation} />
                         </div>

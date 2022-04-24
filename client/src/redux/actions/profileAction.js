@@ -9,11 +9,36 @@ export const PROFILE_TYPES = {
     GET_USER: 'GET_PROFILE_USER',
     FOLLOW: 'FOLLOW',
     UNFOLLOW: 'UNFOLLOW',
+    BLOCK:'BLOCK',
+    UNBLOCK:'UNBLOCK',
     GET_ID: 'GET_PROFILE_ID',
     GET_POSTS: 'GET_PROFILE_POSTS',
     UPDATE_POST: 'UPDATE_PROFILE_POST'
 }
 
+export const getBlockedUsers = ({id,auth}) => async(dispatch)=>{
+    dispatch({type: PROFILE_TYPES.GET_ID, payload: id})
+
+    try{
+        dispatch({type: PROFILE_TYPES.LOADING, payload: true})
+        const res = getDataAPI(`/user/${id}`,auth.token)
+
+        const users = await res;
+        dispatch({
+            type: PROFILE_TYPES.GET_USER,
+            payload: users.data
+        })
+
+        dispatch({type: PROFILE_TYPES.LOADING, payload: false})
+
+    }catch(err){
+        dispatch({
+            type: GLOBALTYPES.ALERT, 
+            payload: {error: err}
+        })
+    }
+
+}
 
 export const getProfileUsers = ({id, auth}) => async (dispatch) => {
     dispatch({type: PROFILE_TYPES.GET_ID, payload: id})
@@ -134,6 +159,52 @@ export const follow = ({users, user, auth, socket}) => async (dispatch) => {
     }
 }
 
+export const block = ({users,user,auth,socket}) => async(dispatch)=>{
+    let newUser;
+    
+    if(users.every(item => item._id !== user._id)){
+        newUser = {...user, blockList: [...user.blockList, auth.user]}
+    }else{
+        users.forEach(item => {
+            if(item._id === user._id){
+                newUser = {...item, blockList: [...item.blockList, auth.user]}
+            }
+        })
+    }
+
+    dispatch({ type: PROFILE_TYPES.BLOCK, payload: newUser })
+
+    dispatch({
+        type: GLOBALTYPES.AUTH, 
+        payload: {
+            ...auth,
+            user: {...auth.user, blockList: [...auth.user.blockList, newUser]}
+        }
+    })
+
+
+    try {
+        const res = await patchDataAPI(`user/block_user/${user._id}`, null, auth.token)
+        socket.emit('block', res.data.newUser)
+
+        // Notify
+        const msg = {
+            id: auth.user._id,
+            text: 'has blocked you.',
+            recipients: [newUser._id],
+            url: `/profile/${auth.user._id}`,
+        }
+
+        dispatch(createNotify({msg, auth, socket}))
+
+    } catch (err) {
+        dispatch({
+            type: GLOBALTYPES.ALERT, 
+            payload: {error: err.response.data.msg}
+        })
+    }
+}
+
 export const unfollow = ({users, user, auth, socket}) => async (dispatch) => {
 
     let newUser;
@@ -170,6 +241,56 @@ export const unfollow = ({users, user, auth, socket}) => async (dispatch) => {
         const msg = {
             id: auth.user._id,
             text: 'has started to follow you.',
+            recipients: [newUser._id],
+            url: `/profile/${auth.user._id}`,
+        }
+
+        dispatch(removeNotify({msg, auth, socket}))
+
+    } catch (err) {
+        dispatch({
+            type: GLOBALTYPES.ALERT, 
+            payload: {error: err.response.data.msg}
+        })
+    }
+}
+
+export const unblock = ({users, user, auth, socket}) => async (dispatch) => {
+
+    let newUser;
+
+    if(users.every(item => item._id !== user._id)){
+        newUser = {...user, blockList: DeleteData(user.blockList, auth.user._id)}
+    }else{
+        users.forEach(item => {
+            if(item._id === user._id){
+                newUser = {...item, blockList: DeleteData(item.blockList, auth.user._id)}
+            }
+        })
+    }
+
+    dispatch({ type: PROFILE_TYPES.UNBLOCK, payload: newUser })
+
+    dispatch({
+        type: GLOBALTYPES.AUTH, 
+        payload: {
+            ...auth,
+            user: { 
+                ...auth.user, 
+                blockList: DeleteData(auth.user.blockList, newUser._id) 
+            }
+        }
+    })
+   
+
+    try {
+        const res = await patchDataAPI(`user/unblock/${user._id}`, null, auth.token)
+        socket.emit('unBlock', res.data.newUser)
+
+        // Notify
+        const msg = {
+            id: auth.user._id,
+            text: 'has unblocked you.',
             recipients: [newUser._id],
             url: `/profile/${auth.user._id}`,
         }

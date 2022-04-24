@@ -84,7 +84,7 @@ function App() {
           <Route exact path="/" component={auth.token ? Home : Login} />
           <Route exact path="/register" component={Register} />
            <Route exact path='/room' component={() => { 
-              window.location.href = 'http://localhost:3006/'; 
+              window.location.href = 'http://localhost:3001/'; 
               return null;
           }}/>
           

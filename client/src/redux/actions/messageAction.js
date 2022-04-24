@@ -2,6 +2,7 @@ import { GLOBALTYPES, DeleteData } from '../actions/globalTypes'
 import { postDataAPI, getDataAPI, deleteDataAPI } from '../../utils/fetchData'
 
 export const MESS_TYPES = {
+    BLOCK_USER:'BLOCK_USER',
     ADD_USER: 'ADD_USER',
     ADD_MESSAGE: 'ADD_MESSAGE',
     GET_CONVERSATIONS: 'GET_CONVERSATIONS',
@@ -87,6 +88,20 @@ export const deleteConversation = ({auth, id}) => async (dispatch) => {
     try {
         await deleteDataAPI(`conversation/${id}`, auth.token)
     } catch (err) {
+        dispatch({type: GLOBALTYPES.ALERT, payload: {error: err.response.data.msg}})
+    }
+}
+
+export const blockUser = ({auth, id}) => async (dispatch) => {
+    
+    dispatch({type: MESS_TYPES.BLOCK_USER, payload: id})
+    // dispatch({type: MESS_TYPES.DELETE_CONVERSATION, payload: id})
+    try {
+        
+        await deleteDataAPI(`block_user/${id}`, auth.token)
+        // await deleteDataAPI(`conversation/${id}`, auth.token)
+    } catch (err) {
+        console.log(err.response)
         dispatch({type: GLOBALTYPES.ALERT, payload: {error: err.response.data.msg}})
     }
 }

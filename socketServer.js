@@ -98,6 +98,17 @@ const SocketServer = (socket) => {
         user && socket.to(`${user.socketId}`).emit('unFollowToClient', newUser)
     })
 
+    //Block
+    socket.on('block',newUser=>{
+        const user = users.find(user => user.id === newUser._id)
+        user && socket.to(`${user.socketId}`).emit('blockToClient', newUser)
+    })
+
+    socket.on('unBlock',newUser=>{
+        const user = users.find(user => user.id === newUser._id)
+        user && socket.to(`${user.socketId}`).emit('unBlockToClient', newUser)
+    })
+
 
     // Notification
     socket.on('createNotify', msg => {
